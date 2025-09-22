@@ -1,0 +1,209 @@
+import asyncio
+import json
+import logging
+import os
+import random
+import subprocess
+import time
+from dataclasses import dataclass
+from io import BytesIO
+from typing import List, Dict, Tuple
+
+from PIL import Image, ImageDraw
+
+# -- Setup logging --
+logging.basicConfig(level=logging.INFO,
+                    format='[%(asctime)s][%(levelname)s] %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
+
+# ---------- Configuration ----------
+@dataclass
+class Config:
+    openai_api_key: str = "YOUR_OPENAI_API_KEY"
+    image_size: Tuple[int, int] = (512, 512)
+    default_character_size: Tuple[int, int] = (300, 300)
+    scene_duration_sec: float = 6.0
+    video_framerate: int = 30
+    audio_sample_rate: int = 22050
+    output_folder: str = "output"
+    tmp_folder: str = "tmp"
+    subtitles_file: str = "subtitles.srt"
+    video_file: str = "final_animation.mp4"
+    max_concurrent_api_calls: int = 5
+
+cfg = Config()
+
+# Ensure directories exist
+os.makedirs(cfg.output_folder, exist_ok=True)
+os.makedirs(cfg.tmp_folder, exist_ok=True)
+
+# ---------- Data Classes ----------
+@dataclass
+class Dialogue:
+    speaker: str
+    text: str
+    emotion: str = "neutral"
+
+@dataclass
+class Scene:
+    id: int
+    description: str
+    background_prompt: str
+    characters_prompt: List[str]
+    dialogues: List[Dialogue]
+    character_positions: List[Tuple[int, int]] = None
+
+# ---------- Simulated AI APIs ----------
+
+async def simulate_openai_image_generation(prompt: str, style: str = "cartoon") -> Image.Image:
+    # Placeholder for a real AI image generation call (e.g. DALL-E)
+    logging.info(f"Generating image for prompt: {prompt} with style {style}")
+    # Generate an image with random colored background and text to simulate
+    img = Image.new('RGBA', cfg.image_size, (random.randint(50,200), random.randint(50,200), random.randint(50,200), 255))
+    draw = ImageDraw.Draw(img)
+    draw.text((10, cfg.image_size[1]//2), prompt[:25], fill=(255,255,255))
+    await asyncio.sleep(1)  # Simulate network delay
+    return img
+
+async def simulate_text_to_speech(text: str, emotion: str = "neutral") -> str:
+    # Placeholder for neural TTS with emotion
+    filename = os.path.join(cfg.tmp_folder, f"speech_{hash(text)}.mp3")
+    logging.info(f"Simulating TTS generation for text with emotion {emotion}")
+    # Simulated audio generation by creating silent mp3 or dummy file
+    with open(filename, "wb") as f:
+        f.write(b"FAKEAUDIO")
+    await asyncio.sleep(0.5)
+    return filename
+
+# ---------- Core Functions ----------
+
+async def generate_scene_images(scene: Scene) -> Image.Image:
+    # Generate background
+    background = await simulate_openai_image_generation(scene.background_prompt, "background")
+    character_images = []
+    for prompt in scene.characters_prompt:
+        char_img = await simulate_openai_image_generation(prompt, "character")
+        char_img = char_img.resize(cfg.default_character_size)
+        character_images.append(char_img)
+    # Compose scene
+    scene_img = background.copy()
+    if scene.character_positions is None or len(scene.character_positions) < len(character_images):
+        positions = [(50 + 220 * i, cfg.image_size[1]-300) for i in range(len(character_images))]
+    else:
+        positions = scene.character_positions
+    for img, pos in zip(character_images, positions):
+        scene_img.alpha_composite(img, dest=pos)
+    # Draw scene description
+    draw = ImageDraw.Draw(scene_img)
+    draw.text((10,10), scene.description[:50], fill=(255,255,255))
+    return scene_img
+
+async def generate_dialogue_audio(dialogue: Dialogue) -> Tuple[str, float]:
+    audio_file = await simulate_text_to_speech(dialogue.text, dialogue.emotion)
+    # Approximate duration based on length (words / 2.5 wps)
+    duration = max(len(dialogue.text.split()) / 2.5, 2)
+    return audio_file, duration
+
+def write_subtitle_entry(srt_file, number: int, start_sec: float, end_sec: float, text: str):
+    def sec_to_srt_timestamp(time_sec):
+        hours = int(time_sec // 3600)
+        minutes = int((time_sec % 3600) // 60)
+        seconds = int(time_sec % 60)
+        milliseconds = int((time_sec - int(time_sec)) * 1000)
+        return f"{hours:02}:{minutes:02}:{seconds:02},{milliseconds:03}"
+    srt_file.write(f"{number}\n")
+    srt_file.write(f"{sec_to_srt_timestamp(start_sec)} --> {sec_to_srt_timestamp(end_sec)}\n")
+    srt_file.write(f"{text}\n\n")
+
+async def assemble_video(scenes: List[Scene], scene_images: List[Image.Image], audio_files: List[str], audio_durations: List[float]):
+    # Save images as numbered PNGs
+    for idx, img in enumerate(scene_images):
+        path = os.path.join(cfg.tmp_folder, f"scene_{idx}.png")
+        img.save(path)
+
+    # Combine audio into one file via ffmpeg concat
+    concat_list_filename = os.path.join(cfg.tmp_folder, "audio_concat.txt")
+    with open(concat_list_filename, "w") as f:
+        for afile in audio_files:
+            f.write(f"file '{afile}'\n")
+
+    combined_audio = os.path.join(cfg.tmp_folder, "combined_audio.mp3")
+    ffmpeg_concat_cmd = ["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", concat_list_filename, "-c", "copy", combined_audio]
+    subprocess.run(ffmpeg_concat_cmd, check=True)
+
+    # Create subtitles file
+    with open(os.path.join(cfg.tmp_folder, cfg.subtitles_file), "w") as srt_file:
+        current_time = 0.0
+        subtitle_number = 1
+        for scene, audio_duration in zip(scenes, audio_durations):
+            for dialogue in scene.dialogues:
+                duration = max(len(dialogue.text.split()) / 2.5, 2)
+                write_subtitle_entry(srt_file, subtitle_number, current_time, current_time + duration, f"{dialogue.speaker}: {dialogue.text}")
+                current_time += duration
+                subtitle_number += 1
+
+    # Create video from images and combined audio with subtitles overlay
+    cmd = [
+        "ffmpeg", "-y",
+        "-framerate", f"{1/cfg.scene_duration_sec}",
+        "-i", os.path.join(cfg.tmp_folder, "scene_%d.png"),
+        "-i", combined_audio,
+        "-vf", f"subtitles={os.path.join(cfg.tmp_folder, cfg.subtitles_file)}",
+        "-c:v", "libx264",
+        "-r", str(cfg.video_framerate),
+        "-pix_fmt", "yuv420p",
+        "-c:a", "aac",
+        "-shortest",
+        os.path.join(cfg.output_folder, cfg.video_file)
+    ]
+    logging.info("Starting video rendering...")
+    subprocess.run(cmd, check=True)
+    logging.info(f"Video rendered to {os.path.join(cfg.output_folder, cfg.video_file)}")
+
+async def process_scene(scene: Scene) -> Tuple[Image.Image, List[str], List[float]]:
+    logging.info(f"Processing scene ID {scene.id}...")
+    image = await generate_scene_images(scene)
+    audio_files = []
+    durations = []
+    for dialogue in scene.dialogues:
+        audio_file, duration = await generate_dialogue_audio(dialogue)
+        audio_files.append(audio_file)
+        durations.append(duration)
+    return image, audio_files, durations
+
+async def main(story_file="story.json"):
+    with open(story_file, "r") as f:
+        scenes_data = json.load(f)
+
+    scenes = []
+    for scene_object in scenes_data:
+        dialogues = [Dialogue(**dlg) for dlg in scene_object.get("dialogues", [])]
+        scene = Scene(
+            id = scene_object["id"],
+            description = scene_object.get("description", ""),
+            background_prompt = scene_object.get("background_prompt", ""),
+            characters_prompt = scene_object.get("characters_prompt", []),
+            dialogues = dialogues,
+            character_positions = scene_object.get("character_positions", [])
+        )
+        scenes.append(scene)
+
+    # Parallel processing with limits on maximum concurrent API calls
+    semaphore = asyncio.Semaphore(cfg.max_concurrent_api_calls)
+    async def sem_process(scene):
+        async with semaphore:
+            return await process_scene(scene)
+
+    scene_tasks = [sem_process(scn) for scn in scenes]
+    results = await asyncio.gather(*scene_tasks)
+
+    images, audio_lists, durations_lists = zip(*results)
+    all_audio_files = [item for sublist in audio_lists for item in sublist]
+    all_durations = [item for sublist in durations_lists for item in sublist]
+
+    await assemble_video(scenes, list(images), all_audio_files, all_durations)
+
+if __name__ == "__main__":
+    import sys
+    story_json = sys.argv[1] if len(sys.argv) > 1 else "story.json"
+    asyncio.run(main(story_json))
