@@ -1,0 +1,27 @@
+# Core AI
+anthropic>=0.25.0
+
+# Web & data
+aiohttp>=3.8,<4           # already in requirements.txt — weather, image loading
+duckduckgo-search>=5.0    # web & news search (free, no API key)
+
+# System monitoring
+psutil>=5.9
+
+# Terminal UI
+rich>=13.0
+
+# Image generation (already in this repo)
+Pillow>=9.1,<9.2
+
+# ── Optional extras ─────────────────────────────────────────────────────────
+
+# Voice output (Text-to-Speech)
+# pip install pyttsx3
+
+# Voice input (Speech-to-Text)
+# pip install SpeechRecognition
+# pip install pyaudio          # Linux: sudo apt-get install portaudio19-dev
+
+# Wikipedia lookups
+# pip install wikipedia
