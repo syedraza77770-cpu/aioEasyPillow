@@ -1,0 +1,576 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,300;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties ─────────────────────────────────────────────── */
+:root {
+  /* ── Named gem/brand colour palette (spec-required aliases) ── */
+  --gold-primary:    #D4AF37;
+  --gold-light:      #F5D06B;
+  --gold-dark:       #A07B1E;
+  --gold-shine:      #FFE974;
+  --ruby-red:        #9B1B30;
+  --emerald-green:   #046307;
+  --sapphire-blue:   #0F52BA;
+  --amethyst-purple: #9966CC;
+  --topaz-orange:    #FFA500;
+  --pearl-white:     #F8F4F0;
+  --deep-navy:       #0A0A2E;
+  --charcoal:        #1A1A2E;
+  --warm-white:      #FAFAF7;
+  --text-dark:       #1A1A2E;
+  --text-muted:      #6B7280;
+
+  /* Gold palette */
+  --gold-50: #fffbeb;
+  --gold-100: #fef3c7;
+  --gold-200: #fde68a;
+  --gold-300: #fcd34d;
+  --gold-400: #fbbf24;
+  --gold-500: #f59e0b;
+  --gold-600: #d97706;
+  --gold-700: #b45309;
+  --gold-800: #92400e;
+  --gold-900: #78350f;
+
+  /* Jewel tones */
+  --ruby:     #9f1239;
+  --ruby-light: #f43f5e;
+  --emerald:  #065f46;
+  --emerald-light: #10b981;
+  --sapphire: #1e3a8a;
+  --sapphire-light: #3b82f6;
+  --amethyst: #6b21a8;
+  --pearl:    #f8f5f0;
+  --onyx:     #0f0f0f;
+
+  /* Brand colours */
+  --brand-gold:    #c9983a;
+  --brand-gold-light: #e8c26a;
+  --brand-dark:    #1a1209;
+  --brand-navy:    #0d1b2a;
+  --brand-charcoal: #1c1c2e;
+
+  /* Typography */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Lato', system-ui, sans-serif;
+
+  /* Spacing / radius */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 2rem;
+
+  /* Shadows */
+  --shadow-gold: 0 4px 24px rgba(201, 152, 58, 0.25);
+  --shadow-deep: 0 8px 40px rgba(0, 0, 0, 0.35);
+  --shadow-glow: 0 0 20px rgba(201, 152, 58, 0.4);
+}
+
+/* ─── Base Reset & Globals ───────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: #ffffff;
+  color: #1a1209;
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+/* Custom text selection colour */
+::selection {
+  background-color: var(--brand-gold);
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: var(--brand-gold);
+  color: #ffffff;
+}
+
+/* ─── Elegant Scrollbar ─────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--gold-50);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    var(--brand-gold-light) 0%,
+    var(--brand-gold) 50%,
+    var(--gold-700) 100%
+  );
+  border-radius: 999px;
+  border: 1px solid var(--gold-200);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--gold-400) 0%,
+    var(--brand-gold) 50%,
+    var(--gold-800) 100%
+  );
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--brand-gold) var(--gold-50);
+}
+
+/* ─── Keyframe Animations ────────────────────────────────────────────────── */
+
+/* Gem shimmer — sweeping light effect for text / surfaces */
+@keyframes gem-shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Subtle vertical float */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* Gentle horizontal sway */
+@keyframes sway {
+  0%, 100% {
+    transform: rotate(-2deg);
+  }
+  50% {
+    transform: rotate(2deg);
+  }
+}
+
+/* Sparkle / glitter twinkle */
+@keyframes sparkle {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    opacity: 0.6;
+    transform: scale(1.3) rotate(15deg);
+  }
+  50% {
+    opacity: 0.3;
+    transform: scale(0.9) rotate(30deg);
+  }
+  75% {
+    opacity: 0.8;
+    transform: scale(1.15) rotate(45deg);
+  }
+}
+
+/* Glitter particle burst */
+@keyframes glitter {
+  0% {
+    opacity: 0;
+    transform: scale(0) translate(0, 0);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1) translate(var(--tx, 6px), var(--ty, -6px));
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.5) translate(calc(var(--tx, 6px) * 2), calc(var(--ty, -6px) * 2));
+  }
+}
+
+/* Pulse glow for CTAs / badges */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(201, 152, 58, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 24px rgba(201, 152, 58, 0.7), 0 0 48px rgba(201, 152, 58, 0.3);
+  }
+}
+
+/* Fade-in slide up */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Rotate for loading / decorative elements */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Scroll indicator bounce */
+@keyframes bounce-down {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+}
+
+/* ─── Animation Utility Classes ─────────────────────────────────────────── */
+.animate-gem-shimmer {
+  animation: gem-shimmer 3s linear infinite;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-sway {
+  animation: sway 3s ease-in-out infinite;
+}
+
+.animate-sparkle {
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.animate-glitter {
+  animation: glitter 1.8s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2.5s ease-in-out infinite;
+}
+
+.animate-fade-up {
+  animation: fade-up 0.6s ease-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 8s linear infinite;
+}
+
+.animate-bounce-down {
+  animation: bounce-down 1.5s ease-in-out infinite;
+}
+
+/* ─── Gradient Text ─────────────────────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--gold-400) 0%,
+    var(--brand-gold-light) 30%,
+    var(--brand-gold) 50%,
+    var(--gold-600) 70%,
+    var(--gold-800) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 200% auto;
+}
+
+.gradient-text-shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--gold-600) 0%,
+    var(--brand-gold-light) 30%,
+    #fff8e1 50%,
+    var(--brand-gold-light) 70%,
+    var(--gold-600) 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gem-shimmer 3s linear infinite;
+}
+
+.gradient-text-jewel {
+  background: linear-gradient(
+    135deg,
+    var(--ruby-light) 0%,
+    var(--brand-gold) 33%,
+    var(--emerald-light) 66%,
+    var(--sapphire-light) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Crystal / Glass Morphism ──────────────────────────────────────────── */
+.glass {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.glass-dark {
+  background: rgba(26, 18, 9, 0.6);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(201, 152, 58, 0.2);
+  border-radius: var(--radius-md);
+}
+
+.glass-gold {
+  background: rgba(201, 152, 58, 0.1);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(201, 152, 58, 0.35);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15),
+              0 4px 16px rgba(201, 152, 58, 0.15);
+}
+
+.crystal-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  backdrop-filter: blur(24px) saturate(200%) brightness(110%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(110%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+.crystal-card:hover {
+  border-color: rgba(201, 152, 58, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 12px 48px rgba(201, 152, 58, 0.2),
+    0 0 0 1px rgba(201, 152, 58, 0.1);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+/* ─── Gold Button ────────────────────────────────────────────────────────── */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 2rem;
+  background: linear-gradient(
+    135deg,
+    var(--gold-400) 0%,
+    var(--brand-gold) 50%,
+    var(--gold-700) 100%
+  );
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.9375rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow-gold);
+}
+
+.btn-gold::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-gold:hover::before {
+  transform: translateX(100%);
+}
+
+.btn-gold:active {
+  transform: translateY(0);
+}
+
+/* ─── Section Divider ────────────────────────────────────────────────────── */
+.divider-gold {
+  width: 80px;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--brand-gold),
+    transparent
+  );
+  margin: 0 auto;
+}
+
+/* ─── Typography Helpers ─────────────────────────────────────────────────── */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.heading-xl {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.heading-lg {
+  font-family: var(--font-display);
+  font-size: clamp(1.5rem, 3vw, 2.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* ─── Card Hover Lift ────────────────────────────────────────────────────── */
+.card-hover {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card-hover:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), var(--shadow-gold);
+}
+
+/* ─── Sparkle Decoration ────────────────────────────────────────────────── */
+.sparkle-decoration {
+  position: relative;
+}
+
+.sparkle-decoration::before,
+.sparkle-decoration::after {
+  content: '✦';
+  position: absolute;
+  color: var(--brand-gold);
+  font-size: 0.6em;
+  animation: sparkle 2s ease-in-out infinite;
+}
+
+.sparkle-decoration::before {
+  top: -0.4em;
+  left: -0.8em;
+  animation-delay: 0s;
+}
+
+.sparkle-decoration::after {
+  top: -0.4em;
+  right: -0.8em;
+  animation-delay: 1s;
+}
+
+/* ─── Focus Ring ─────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--brand-gold);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* ─── Image Object Fit Helpers ───────────────────────────────────────────── */
+.img-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* ─── Overlay Gradients ──────────────────────────────────────────────────── */
+.overlay-dark {
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+}
+
+.overlay-gold {
+  background: linear-gradient(
+    135deg,
+    rgba(201, 152, 58, 0.15) 0%,
+    rgba(180, 83, 9, 0.1) 100%
+  );
+}
+
+/* ─── Aliases / Extra Utilities ─────────────────────────────────────────── */
+
+/* glass-card: alias for crystal-card (spec-required name) */
+.glass-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.06) 100%
+  );
+  backdrop-filter: blur(24px) saturate(200%) brightness(110%);
+  -webkit-backdrop-filter: blur(24px) saturate(200%) brightness(110%);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius-lg);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.08),
+    0 8px 32px rgba(0, 0, 0, 0.12);
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+
+.glass-card:hover {
+  border-color: rgba(212, 175, 55, 0.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 12px 48px rgba(212, 175, 55, 0.2),
+    0 0 0 1px rgba(212, 175, 55, 0.1);
+}
+
+/* font-serif: Playfair Display helper */
+.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
